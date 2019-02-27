@@ -223,7 +223,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			return {
 				currentKeySet: this.defaultKeySet,
 
-				inputScrollLeft: 0
+				inputScrollLeft: 0,
+
+				repeat_timers: {}
 			};
 		},
 
@@ -345,8 +347,55 @@ return /******/ (function(modules) { // webpackBootstrap
 
 				this.inputScrollLeft = this.input.scrollLeft;
 			},
-			touchKey: function touchKey(e, key) {
-				this.clickKey(e, key);
+			startKeyRepeat: function startKeyRepeat(e, key) {
+				var _this = this;
+
+				if (this == null) {
+					Console.error('Console error: this was null');
+				}
+
+				if (this.repeat_timers[key] != null) {
+					this.repeat_timers[key].elapsed = true;
+
+					var interval = setInterval(function () {
+						_this.clickKey(e, key);
+					}, 100);
+
+					this.repeat_timers[key].interval = interval;
+
+					this.clickKey(e, key);
+				}
+			},
+			touchKeyStart: function touchKeyStart(e, key) {
+				var _this2 = this;
+
+				this.repeat_timers[key] = {
+					timeout: setTimeout(function () {
+						return _this2.startKeyRepeat(e, key);
+					}, 1000),
+					elapsed: false,
+					interval: null
+				};
+
+				e.preventDefault();
+				return false;
+			},
+			touchKeyEnd: function touchKeyEnd(e, key) {
+
+				if (this.repeat_timers[key] != null) {
+
+					if (this.repeat_timers[key].elapsed) {
+						var interval = this.repeat_timers[key].interval;
+						clearInterval(interval);
+					} else {
+						clearTimeout(this.repeat_timers[key].timeout);
+						this.clickKey(e, key);
+					}
+
+					this.repeat_timers[key] = null;
+				} else {
+					this.clickKey(e, key);
+				}
 
 				e.preventDefault();
 				return false;
@@ -2195,7 +2244,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        on: {
 	          "click": function (e) { return _vm.clickKey(e, key); },
-	          "touchend": function (e) { return _vm.touchKey(e, key); },
+	          "touchstart": function (e) { return _vm.touchKeyStart(e, key); },
+	          "touchend": function (e) { return _vm.touchKeyEnd(e, key); },
 	          "mousedown": _vm.mousedown
 	        }
 	      })

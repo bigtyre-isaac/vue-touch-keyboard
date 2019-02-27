@@ -1,11 +1,21 @@
-<template lang="jade">
-	.vue-touch-keyboard
-		// input(type="text", v-model="keyboardText", v-if="!input")
-		.keyboard
-			.line(v-for="(line, index) in keySet", :key="index")
-				span(v-for="(key, index) in line", :key="index", :class="getClassesOfKey(key)", v-text="getCaptionOfKey(key)", @click="e => clickKey(e, key)", @touchend="e => touchKey(e, key)", @mousedown="mousedown", :style="getKeyStyle(key)")
-
-
+<template>
+	<div class="vue-touch-keyboard">
+		<div class="keyboard">
+			<div class="line" v-for="(line, index) in keySet" :key="index">
+				<span 
+					v-for="(key, index) in line" 
+					:key="index"
+					:class="getClassesOfKey(key)"
+					v-text="getCaptionOfKey(key)"
+					@click="e => clickKey(e, key)"
+					@touchstart="e => touchKeyStart(e, key)"
+					@touchend="e => touchKeyEnd(e, key)"
+					@mousedown="mousedown"
+					:style="getKeyStyle(key)"
+				/>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -32,14 +42,18 @@
 				default() {
 					return {};
 				}
-			}
+			},
 		},
 		
 		data () {
 			return {
 				currentKeySet: this.defaultKeySet,
 
-				inputScrollLeft: 0
+				inputScrollLeft: 0,
+
+				repeat_timers: {
+
+				}
 			};
 		},
 
@@ -186,8 +200,53 @@
 				this.inputScrollLeft = this.input.scrollLeft;
 			},
 
-			touchKey(e, key) {
-				this.clickKey(e, key);
+			startKeyRepeat(e, key) {
+				//console.log('Start key repeat');
+				if (this == null) {
+					Console.error('Console error: this was null');
+				}
+
+				if (this.repeat_timers[key] != null) {
+					this.repeat_timers[key].elapsed = true;
+					
+					var interval = setInterval(() => {
+						this.clickKey(e, key);
+					}, 100);
+					
+					this.repeat_timers[key].interval = interval;
+					
+					this.clickKey(e, key)
+				}
+			},
+
+			touchKeyStart(e, key) {
+				this.repeat_timers[key] = {
+					timeout: setTimeout(() => this.startKeyRepeat(e, key), 1000),
+					elapsed: false,
+					interval: null
+				}
+
+				e.preventDefault();
+				return false;
+			},
+
+			touchKeyEnd(e, key) {
+
+				if (this.repeat_timers[key] != null) {
+
+					if (this.repeat_timers[key].elapsed) {
+						var interval = this.repeat_timers[key].interval;
+						clearInterval(interval);
+
+					} else {
+						clearTimeout(this.repeat_timers[key].timeout);
+						this.clickKey(e, key);
+					}
+					
+					this.repeat_timers[key] = null;
+				} else {
+					this.clickKey(e, key);
+				}
 
 				e.preventDefault();
 				return false;

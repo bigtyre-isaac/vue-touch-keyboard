@@ -1,10 +1,11 @@
-var webpack = require("webpack");
-var version = require("./package.json").version;
-var banner = "/**\n" + " * vue-touch-keyboard v" + version + "\n" + " * https://github.com/icebob/vue-touch-keyboard\n" + " * Released under the MIT License.\n" + " */\n";
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-var StatsPlugin = require("stats-webpack-plugin");
+let webpack = require("webpack");
+let version = require("./package.json").version;
+let banner = "/**\n" + " * vue-touch-keyboard v" + version + "\n" + " * https://github.com/icebob/vue-touch-keyboard\n" + " * Released under the MIT License.\n" + " */\n";
+let ExtractTextPlugin = require("extract-text-webpack-plugin");
+let StatsPlugin = require("stats-webpack-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
-var loaders = [
+let loaders = [
 	{
 		"test": /\.js?$/,
 		"exclude": /node_modules/,
@@ -20,6 +21,7 @@ var loaders = [
 	}	
 ];
 
+
 module.exports = [
 	{
 		entry: "./src/index",
@@ -29,16 +31,13 @@ module.exports = [
 			library: "VueTouchKeyboard",
 			libraryTarget: "umd"
 		},
-
+		optimization: {
+			minimizer: [new UglifyJsPlugin()],
+		},
 		plugins: [
 			new webpack.DefinePlugin({
 				"process.env" : {
 					NODE_ENV : JSON.stringify("production")
-				}
-			}),
-			new webpack.optimize.UglifyJsPlugin({
-				compress: {
-					warnings: false
 				}
 			}),
 			new webpack.optimize.DedupePlugin(),

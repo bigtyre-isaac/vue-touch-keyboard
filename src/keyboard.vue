@@ -3,7 +3,7 @@
 		// input(type="text", v-model="keyboardText", v-if="!input")
 		.keyboard
 			.line(v-for="(line, index) in keySet", :key="index")
-				span(v-for="(key, index) in line", :key="index", :class="getClassesOfKey(key)", v-text="getCaptionOfKey(key)", @click="e => clickKey(e, key)", @mousedown="mousedown", :style="getKeyStyle(key)")
+				span(v-for="(key, index) in line", :key="index", :class="getClassesOfKey(key)", v-text="getCaptionOfKey(key)", @click="e => clickKey(e, key)", @touchend="e => touchKey(e, key)", @mousedown="mousedown", :style="getKeyStyle(key)")
 
 
 </template>
@@ -184,6 +184,13 @@
 				if (this.options.preventClickEvent) e.preventDefault();
 
 				this.inputScrollLeft = this.input.scrollLeft;
+			},
+
+			touchKey(e, key) {
+				this.clickKey(e, key);
+
+				e.preventDefault();
+				return false;
 			},
 
 			clickKey(e, key) {

@@ -107,7 +107,7 @@
       background-color: #d6d6d6;
       border-color: #adadad;
 }
-.vue-touch-keyboard .keyboard .key:active {
+.vue-touch-keyboard .keyboard .key:active, .vue-touch-keyboard .keyboard .key.touched {
       -webkit-transform: scale(0.98);
               transform: scale(0.98);
       color: #333;

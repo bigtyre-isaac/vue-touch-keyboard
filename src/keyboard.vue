@@ -1,6 +1,6 @@
 <template>
 	<div class="vue-touch-keyboard">
-		<div class="keyboard">
+		<div :class="{ keyboard: true, touch_keyboard: keyboard_touched }">
 			<div class="line" v-for="(line, index) in keySet" :key="index">
 				<span 
 					v-for="(key, index) in line" 
@@ -37,6 +37,8 @@
 			change: Function,
 			next: Function,
 
+			onKeyPress: Function,
+
 			options: {
 				type: Object,
 				default() {
@@ -50,6 +52,7 @@
 				currentKeySet: this.defaultKeySet,
 
 				inputScrollLeft: 0,
+				keyboard_touched: false,
 
 				repeat_timers: {
 
@@ -220,6 +223,9 @@
 			},
 
 			touchKeyStart(e, key) {
+				e.target.classList.add("touched");
+				this.keyboard_touched = true;
+
 				this.repeat_timers[key] = {
 					timeout: setTimeout(() => this.startKeyRepeat(e, key), 1000),
 					elapsed: false,
@@ -231,6 +237,7 @@
 			},
 
 			touchKeyEnd(e, key) {
+				e.target.classList.remove("touched");
 
 				if (this.repeat_timers[key] != null) {
 
@@ -328,6 +335,8 @@
 					if (this.next)
 						this.next();
 				}
+
+				if (this.onKeyPress) this.onKeyPress(e, key);
 
 				// trigger 'input' Event
 				this.input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -427,7 +436,7 @@
 					border-color: #adadad;
 				}
 				
-				&:active {
+				&:active, &.touched {
 					transform: scale(.98); // translateY(1px);
 					color: #333;
 					background-color: #d4d4d4;

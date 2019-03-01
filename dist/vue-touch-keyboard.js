@@ -211,6 +211,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			change: Function,
 			next: Function,
 
+			onKeyPress: Function,
+
 			options: {
 				type: Object,
 				default: function _default() {
@@ -224,6 +226,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				currentKeySet: this.defaultKeySet,
 
 				inputScrollLeft: 0,
+				keyboard_touched: false,
 
 				repeat_timers: {}
 			};
@@ -369,6 +372,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			touchKeyStart: function touchKeyStart(e, key) {
 				var _this2 = this;
 
+				e.target.classList.add("touched");
+				this.keyboard_touched = true;
+
 				this.repeat_timers[key] = {
 					timeout: setTimeout(function () {
 						return _this2.startKeyRepeat(e, key);
@@ -381,6 +387,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				return false;
 			},
 			touchKeyEnd: function touchKeyEnd(e, key) {
+				e.target.classList.remove("touched");
 
 				if (this.repeat_timers[key] != null) {
 
@@ -471,6 +478,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				if (this.input.maxLength > 0 && text.length >= this.input.maxLength) {
 					if (this.next) this.next();
 				}
+
+				if (this.onKeyPress) this.onKeyPress(e, key);
 
 				this.input.dispatchEvent(new Event("input", { bubbles: true }));
 			},
@@ -2229,7 +2238,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return _c('div', {
 	    staticClass: "vue-touch-keyboard"
 	  }, [_c('div', {
-	    staticClass: "keyboard"
+	    class: {
+	      keyboard: true, touch_keyboard: _vm.keyboard_touched
+	    }
 	  }, _vm._l((_vm.keySet), function(line, index) {
 	    return _c('div', {
 	      key: index,
